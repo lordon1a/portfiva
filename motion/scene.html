@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portfiva demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=block" rel="stylesheet">
+<style>
+  :root {
+    --p: #7c3aed; --p2: #6d28d9; --p3: #a855f7; --pl: #f3effe;
+    --ink: #0f172a; --mut: #64748b; --line: #ece8f6; --bg: #f7f5ff;
+    --wa: #16a34a; --wal: #dcfce7; --tg: #0284c7; --tgl: #e0f2fe; --em: #475569; --eml: #f1f5f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; }
+  body {
+    font-family: Inter, system-ui, sans-serif; color: var(--ink);
+    background: radial-gradient(1200px 600px at 80% -10%, #ede4ff 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, #e9e3ff 0%, transparent 55%), var(--bg);
+    position: relative;
+  }
+  .dots { position: absolute; inset: 0; background-image: radial-gradient(#d9d0f3 1px, transparent 1px);
+          background-size: 22px 22px; opacity: .45; -webkit-mask-image: radial-gradient(closest-side, #000, transparent); }
+  .abs { position: absolute; }
+  .h { font-family: "Plus Jakarta Sans", Inter, sans-serif; }
+
+  /* ---------- intro / outro ---------- */
+  .stage-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+  .mark { width: 84px; height: 84px; border-radius: 24px; background: linear-gradient(140deg, var(--p3), var(--p2));
+          box-shadow: 0 18px 40px -12px rgba(109,40,217,.55); display: grid; place-items: center; }
+  .mark svg { width: 52px; height: 52px; }
+  .wordmark { font-size: 64px; font-weight: 800; letter-spacing: -2px; }
+  .tag { font-size: 22px; color: var(--mut); font-weight: 500; }
+  .tag b { color: var(--p2); font-weight: 600; }
+  .chips { display: flex; gap: 10px; }
+  .chip { font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: #334155; }
+  .by { font-size: 15px; color: var(--mut); }
+
+  /* ---------- caption ---------- */
+  #caption { top: 26px; left: 0; right: 0; text-align: center; font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+  #caption span { color: var(--p2); }
+
+  /* ---------- app window ---------- */
+  #win { left: 100px; top: 88px; width: 1080px; height: 604px; border-radius: 18px; background: #fff;
+         box-shadow: 0 40px 80px -30px rgba(76,29,149,.35), 0 0 0 1px var(--line); overflow: hidden; }
+  .side { position: absolute; left: 0; top: 0; bottom: 0; width: 72px; background: #fbfaff; border-right: 1px solid var(--line);
+          display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 10px; }
+  .side .m { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(140deg, var(--p3), var(--p2)); display: grid; place-items: center; margin-bottom: 10px; }
+  .side .m svg { width: 26px; height: 26px; }
+  .nav { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #94a3b8; position: relative; z-index: 1; }
+  .nav svg { width: 22px; height: 22px; }
+  #navsel { left: 15px; width: 42px; height: 42px; border-radius: 12px; background: var(--pl); z-index: 0; }
+  .top { position: absolute; left: 72px; right: 0; top: 0; height: 58px; border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 20px; gap: 14px; }
+  .search { flex: 1; max-width: 420px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: #fcfcfe; color: #94a3b8; font-size: 14px; display: flex; align-items: center; padding: 0 14px; }
+  .live { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--wa); display: flex; align-items: center; gap: 6px; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--wa); box-shadow: 0 0 0 4px var(--wal); }
+  .avs { display: flex; }
+  .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; border: 2px solid #fff; margin-left: -8px; }
+
+  .view { position: absolute; left: 72px; right: 0; top: 58px; bottom: 0; }
+
+  /* inbox */
+  .list { position: absolute; left: 0; top: 0; bottom: 0; width: 360px; border-right: 1px solid var(--line); padding: 16px 14px; }
+  .lh { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .lh h3 { font-size: 20px; }
+  .count { font-size: 13px; font-weight: 700; color: var(--p2); background: var(--pl); border-radius: 999px; padding: 3px 10px; }
+  .filters { display: flex; gap: 6px; margin-bottom: 12px; }
+  .f { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+  .f.on { background: var(--p); color: #fff; border-color: var(--p); }
+  .item { position: absolute; left: 14px; right: 14px; height: 76px; border-radius: 14px; padding: 12px; display: flex; gap: 12px; border: 1px solid transparent; }
+  .item .a { width: 42px; height: 42px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+  .item .t { flex: 1; min-width: 0; }
+  .row1 { display: flex; align-items: center; gap: 7px; }
+  .nm { font-weight: 600; font-size: 15px; }
+  .b { font-size: 10.5px; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+  .b.wa { color: var(--wa); background: var(--wal); } .b.tg { color: var(--tg); background: var(--tgl); } .b.em { color: var(--em); background: var(--eml); }
+  .tm { margin-left: auto; font-size: 12px; color: #94a3b8; }
+  .pv { font-size: 13.5px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+  .item.sel { background: #faf7ff; border-color: #ddd0fb; }
+  .unread { position: absolute; right: 12px; bottom: 14px; width: 9px; height: 9px; border-radius: 50%; background: var(--p); }
+
+  .conv { position: absolute; left: 360px; right: 0; top: 0; bottom: 0; background: #fcfbff; }
+  .ch { height: 70px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 0 20px; background: #fff; }
+  .ch .a { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: #fde7f3; color: #be185d; }
+  .ch .nm { font-size: 16px; }
+  .ch .ph { font-size: 12.5px; color: var(--mut); }
+  .tags { margin-left: auto; display: flex; gap: 8px; }
+  .tg2 { font-size: 12.5px; font-weight: 700; padding: 6px 11px; border-radius: 999px; }
+  .tg2.pos { background: var(--wal); color: #15803d; }
+  .tg2.hot { background: #fff1e6; color: #c2410c; }
+  .msgs { position: absolute; left: 24px; right: 24px; top: 92px; }
+  .bub { position: absolute; max-width: 430px; padding: 12px 15px; border-radius: 16px; font-size: 15px; line-height: 1.45; }
+  .bub.in { left: 0; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .bub.out { right: 0; background: linear-gradient(135deg, var(--p), var(--p2)); color: #fff; border-bottom-right-radius: 4px; }
+  .bub small { display: block; font-size: 11px; opacity: .6; margin-top: 4px; text-align: right; }
+  .prop { position: absolute; left: 0; width: 300px; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+  .prop .img { height: 92px; background: linear-gradient(160deg, #c4b5fd 0%, #818cf8 45%, #fbcfe8 100%); position: relative; }
+  .prop .img svg { position: absolute; left: 50%; top: 50%; width: 84px; transform: translate(-50%, -46%); }
+  .prop .inf { padding: 10px 12px; font-size: 13.5px; display: flex; justify-content: space-between; }
+  .prop .inf b { color: var(--p2); }
+  .comp { position: absolute; left: 20px; right: 20px; bottom: 18px; min-height: 58px; border-radius: 16px; background: #fff; border: 1px solid var(--line); box-shadow: 0 8px 24px -16px rgba(76,29,149,.3); padding: 12px 14px 12px 16px; display: flex; align-items: center; gap: 12px; }
+  .comp .txt { flex: 1; font-size: 15px; line-height: 1.45; color: #94a3b8; }
+  .comp .txt.on { color: var(--ink); }
+  .caret { display: inline-block; width: 2px; height: 18px; background: var(--p); vertical-align: -3px; margin-left: 1px; }
+  .aibtn { font-size: 13px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--p3), var(--p2)); padding: 9px 13px; border-radius: 11px; white-space: nowrap; }
+  .aibadge { position: absolute; left: 16px; top: -13px; font-size: 11px; font-weight: 700; color: var(--p2); background: var(--pl); border: 1px solid #ddd0fb; padding: 3px 8px; border-radius: 999px; }
+  .send { width: 40px; height: 40px; border-radius: 12px; background: var(--p); display: grid; place-items: center; }
+  .send svg { width: 18px; }
+
+  .empty { position: absolute; left: 360px; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #94a3b8; font-size: 15px; line-height: 1.6; gap: 10px; }
+  .empty .ei { width: 64px; height: 64px; border-radius: 20px; background: var(--pl); display: grid; place-items: center; font-size: 28px; }
+  /* pipeline */
+  .pbar { position: absolute; left: 24px; right: 24px; top: 18px; display: flex; align-items: center; gap: 22px; }
+  .pbar h3 { font-size: 20px; margin-right: auto; }
+  .kpi { font-size: 13px; color: var(--mut); }
+  .kpi b { display: block; font-size: 20px; color: var(--ink); font-family: "Plus Jakarta Sans", sans-serif; }
+  .kpi.won b { color: var(--wa); }
+  .col { position: absolute; top: 84px; bottom: 18px; width: 232px; border-radius: 16px; background: #faf9fe; border: 1px solid var(--line); padding: 12px; }
+  .col h4 { font-size: 13.5px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .col h4 i { width: 8px; height: 8px; border-radius: 50%; }
+  .col h4 em { font-style: normal; margin-left: auto; color: var(--mut); font-weight: 600; }
+  .card { position: absolute; width: 208px; height: 88px; border-radius: 13px; background: #fff; border: 1px solid var(--line); padding: 11px 12px; box-shadow: 0 4px 10px -8px rgba(15,23,42,.25); }
+  .card .c1 { font-size: 13.5px; font-weight: 600; }
+  .card .c2 { font-size: 12.5px; color: var(--mut); margin-top: 3px; }
+  .card .c3 { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; font-size: 13px; font-weight: 700; color: var(--p2); }
+  .card .c3 span { width: 22px; height: 22px; border-radius: 50%; font-size: 10px; color: #fff; display: grid; place-items: center; }
+  .card.lift { z-index: 4; box-shadow: 0 22px 40px -16px rgba(76,29,149,.45); border-color: #ddd0fb; }
+  .auto { position: absolute; font-size: 11.5px; font-weight: 700; color: var(--p2); background: var(--pl); border: 1px solid #ddd0fb; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .cursor { position: absolute; width: 22px; height: 22px; z-index: 5; }
+  .cursor .who { position: absolute; left: 18px; top: 18px; font-size: 11.5px; font-weight: 700; color: #fff; background: #0ea5e9; padding: 3px 8px; border-radius: 8px; white-space: nowrap; }
+  .toast { position: absolute; right: 22px; bottom: 22px; background: var(--ink); color: #fff; font-size: 14px; padding: 12px 16px; border-radius: 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 20px 40px -18px rgba(15,23,42,.6); }
+  .toast i { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; }
+</style>
+</head>
+<body>
+<div class="dots"></div>
+
+<!-- intro -->
+<div id="intro" class="stage-center">
+  <div class="mark" id="imark">
+    <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M9 21 L22 10 L35 21 V31 a3 3 0 0 1 -3 3 H19 l-6 5 v-5 h-1 a3 3 0 0 1 -3 -3 Z"/>
+      <path d="M18 25 h8" /></svg>
+  </div>
+  <div class="wordmark h" id="iword">Portfiva</div>
+  <div class="tag" id="itag">The <b>WhatsApp-first CRM</b> for real estate teams</div>
+</div>
+
+<div id="caption" class="abs h"></div>
+
+<!-- app window -->
+<div id="win" class="abs">
+  <div class="side">
+    <div class="m"><svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M9 21 L22 10 L35 21 V31 a3 3 0 0 1 -3 3 H19 l-6 5 v-5 h-1 a3 3 0 0 1 -3 -3 Z"/></svg></div>
+    <div id="navsel" class="abs"></div>
+    <div class="nav" id="n0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
+    <div class="nav" id="n1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg></div>
+    <div class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 11a3 3 0 1 0 0-6"/><path d="M22 21a6 6 0 0 0-4-5.6"/></svg></div>
+    <div class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+    <div class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5 10a7 7 0 0 1 14 0v5a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><circle cx="9.5" cy="12" r="1"/><circle cx="14.5" cy="12" r="1"/></svg></div>
+    <div class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></div>
+  </div>
+  <div class="top">
+    <div class="search">Search contacts, deals, listings…</div>
+    <div class="live"><i></i>Live</div>
+    <div class="avs" style="margin-left:14px">
+      <div class="av" style="background:#0ea5e9">MK</div>
+      <div class="av" style="background:#f59e0b">SA</div>
+      <div class="av" style="background:#7c3aed">YG</div>
+    </div>
+  </div>
+
+  <!-- INBOX VIEW -->
+  <div class="view" id="vInbox">
+    <div class="list">
+      <div class="lh"><h3 class="h">Inbox</h3><span class="count" id="cnt">0 new</span></div>
+      <div class="filters"><span class="f on">All</span><span class="f">WhatsApp</span><span class="f">Telegram</span><span class="f">Email</span></div>
+      <div class="item" id="it0" style="top:96px"><div class="a" style="background:#fde7f3;color:#be185d">EA</div><div class="t"><div class="row1"><span class="nm">Elif Aydın</span><span class="b wa">WA</span><span class="tm">now</span></div><div class="pv">Is the 3+1 in Çankaya still available?</div></div><i class="unread"></i></div>
+      <div class="item" id="it1" style="top:178px"><div class="a" style="background:#e0f2fe;color:#0369a1">BK</div><div class="t"><div class="row1"><span class="nm">Burak Koç</span><span class="b tg">TG</span><span class="tm">1m</span></div><div class="pv">Sent you the signed rental form 👍</div></div><i class="unread"></i></div>
+      <div class="item" id="it2" style="top:260px"><div class="a" style="background:#fef3c7;color:#b45309">SD</div><div class="t"><div class="row1"><span class="nm">Selin Demir</span><span class="b em">EMAIL</span><span class="tm">4m</span></div><div class="pv">Re: Offer for the Bodrum villa</div></div><i class="unread"></i></div>
+      <div class="item" id="it3" style="top:342px"><div class="a" style="background:#dcfce7;color:#15803d">CY</div><div class="t"><div class="row1"><span class="nm">Can Yıldız</span><span class="b wa">WA</span><span class="tm">9m</span></div><div class="pv">Can we move the viewing to 6pm?</div></div><i class="unread"></i></div>
+      <div class="item" id="it4" style="top:424px"><div class="a" style="background:#ede9fe;color:#6d28d9">ZA</div><div class="t"><div class="row1"><span class="nm">Zeynep Arslan</span><span class="b wa">WA</span><span class="tm">12m</span></div><div class="pv">What's the monthly dues for the flat?</div></div><i class="unread"></i></div>
+    </div>
+    <div class="empty" id="empty"><div class="ei">💬</div>Messages from WhatsApp, Telegram and email<br>land here in real time</div>
+    <div class="conv" id="conv">
+      <div class="ch">
+        <div class="a">EA</div>
+        <div><div class="nm" style="font-weight:600">Elif Aydın</div><div class="ph">WhatsApp · +90 5•• ••• 42 18</div></div>
+        <div class="tags"><span class="tg2 pos" id="tPos">😊 Positive</span><span class="tg2 hot" id="tHot">🔥 Lead score 92</span></div>
+      </div>
+      <div class="msgs">
+        <div class="prop" id="prop" style="top:0">
+          <div class="img"><svg viewBox="0 0 84 60" fill="none"><path d="M8 30 L42 6 L76 30 V56 H8 Z" fill="#fff" fill-opacity=".9"/><rect x="34" y="36" width="16" height="20" rx="2" fill="#a78bfa"/><rect x="16" y="34" width="12" height="10" rx="2" fill="#c4b5fd"/><rect x="56" y="34" width="12" height="10" rx="2" fill="#c4b5fd"/></svg></div>
+          <div class="inf"><span>3+1 · 145 m² · Çankaya</span><b>₺4.2M</b></div>
+        </div>
+        <div class="bub in" id="m1" style="top:146px">Hi! Is the 3+1 in Çankaya still available? 🏡<small>14:02</small></div>
+        <div class="bub out" id="m2" style="top:214px"><span id="m2t"></span><small>14:03 · sent via WhatsApp</small></div>
+      </div>
+      <div class="comp" id="comp">
+        <span class="aibadge" id="aibadge">✨ AI draft</span>
+        <div class="txt" id="ctext">Type a message…</div>
+        <div class="aibtn" id="aibtn">✨ Draft with AI</div>
+        <div class="send" id="send"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE VIEW -->
+  <div class="view" id="vPipe">
+    <div class="pbar">
+      <h3 class="h">Sales pipeline</h3>
+      <div class="kpi">Open pipeline<b id="kOpen">₺31.4M</b></div>
+      <div class="kpi won">Won this month<b id="kWon">₺6.8M</b></div>
+    </div>
+    <div class="col" style="left:24px"><h4><i style="background:#94a3b8"></i>New lead<em id="c0">3</em></h4></div>
+    <div class="col" style="left:268px"><h4><i style="background:#0ea5e9"></i>Viewing booked<em id="c1">2</em></h4></div>
+    <div class="col" style="left:512px"><h4><i style="background:#f59e0b"></i>Offer<em id="c2">2</em></h4></div>
+    <div class="col" style="left:756px"><h4><i style="background:#16a34a"></i>Closed won<em id="c3">1</em></h4></div>
+    <!-- cards: absolute in view coords -->
+    <div class="card" id="k0" style="left:36px;top:124px"><div class="c1">Elif Aydın</div><div class="c2">3+1 · Çankaya</div><div class="c3">₺4.2M<span style="background:#be185d">EA</span></div></div>
+    <div class="card" id="k1" style="left:36px;top:222px"><div class="c1">Zeynep Arslan</div><div class="c2">2+1 · Kadıköy</div><div class="c3">₺5.6M<span style="background:#6d28d9">ZA</span></div></div>
+    <div class="card" id="k2" style="left:36px;top:320px"><div class="c1">Emre Şahin</div><div class="c2">Office · Levent</div><div class="c3">₺9.1M<span style="background:#0f766e">EŞ</span></div></div>
+    <div class="card" style="left:280px;top:124px"><div class="c1">Can Yıldız</div><div class="c2">4+1 · Urla</div><div class="c3">₺7.9M<span style="background:#15803d">CY</span></div></div>
+    <div class="card" id="k4" style="left:280px;top:222px"><div class="c1">Deniz Kaya</div><div class="c2">1+1 · Moda</div><div class="c3">₺3.2M<span style="background:#9333ea">DK</span></div></div>
+    <div class="card" id="k5" style="left:524px;top:124px"><div class="c1">Selin Demir</div><div class="c2">Villa · Bodrum</div><div class="c3">₺6.8M<span style="background:#b45309">SD</span></div></div>
+    <div class="card" id="k6" style="left:524px;top:222px"><div class="c1">Ali Öztürk</div><div class="c2">3+1 · Bornova</div><div class="c3">₺4.5M<span style="background:#0369a1">AÖ</span></div></div>
+    <div class="card" style="left:768px;top:124px"><div class="c1">Burak Koç</div><div class="c2">Rental · Beşiktaş</div><div class="c3">₺6.8M<span style="background:#0369a1">BK</span></div></div>
+    <div class="auto" id="auto">⚡ Automation · viewing booked on WhatsApp</div>
+    <div class="cursor" id="cur"><svg viewBox="0 0 24 24"><path d="M3 2 L20 11 L12 13 L8 21 Z" fill="#0ea5e9" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="who">Mert</span></div>
+    <div class="toast" id="toast"><i></i><span><b>Mert</b> closed Selin Demir · ₺6.8M</span></div>
+  </div>
+</div>
+
+<!-- outro -->
+<div id="outro" class="stage-center">
+  <div class="mark" id="omark">
+    <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M9 21 L22 10 L35 21 V31 a3 3 0 0 1 -3 3 H19 l-6 5 v-5 h-1 a3 3 0 0 1 -3 -3 Z"/><path d="M18 25 h8" /></svg>
+  </div>
+  <div class="wordmark h" id="oword">Portfiva</div>
+  <div class="tag" id="otag">One inbox. AI replies. A pipeline that updates live.</div>
+  <div class="chips" id="ochips"><span class="chip">Python · Flask</span><span class="chip">Socket.IO</span><span class="chip">PostgreSQL</span><span class="chip">LLM APIs</span><span class="chip">Google OAuth</span></div>
+  <div class="by" id="oby">Designed &amp; built by Yiğit Güldal</div>
+</div>
+
+<script>
+const DUR = 14.5;
+const $ = id => document.getElementById(id);
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => cl((t - a) / (b - a));
+const oC = x => 1 - Math.pow(1 - x, 3);                     // easeOutCubic
+const ioC = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const oB = x => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }; // easeOutBack
+const lerp = (a, b, x) => a + (b - a) * x;
+const set = (el, o, tf = '') => { el.style.opacity = o; el.style.transform = tf; };
+const fmt = v => '₺' + v.toFixed(1) + 'M';
+
+const DRAFT = "Hi Elif! Yes, it's still available 🙌 Would Saturday at 11:00 work for a viewing?";
+const CAPS = [
+  [2.1, 5.4, 'Every channel, <span>one inbox</span>'],
+  [5.4, 8.9, '<span>AI</span> drafts the reply and scores the lead'],
+  [8.9, 12.4, 'The pipeline updates <span>live</span> for the whole team'],
+];
+
+function render(t) {
+  // ---- intro (0 – 2.2)
+  const iin = oB(seg(t, 0.1, 0.8)), iout = ioC(seg(t, 1.7, 2.3));
+  set($('imark'), seg(t, 0.1, 0.4) * (1 - iout), `scale(${lerp(.6, 1, iin) * lerp(1, .8, iout)}) rotate(${lerp(-12, 0, iin)}deg)`);
+  set($('iword'), seg(t, 0.35, 0.8) * (1 - iout), `translateY(${lerp(18, 0, oC(seg(t, .35, .9))) - iout * 20}px)`);
+  set($('itag'), seg(t, 0.6, 1.1) * (1 - iout), `translateY(${lerp(14, 0, oC(seg(t, .6, 1.2))) - iout * 20}px)`);
+
+  // ---- window in / out
+  const win = $('win');
+  const wIn = oC(seg(t, 2.0, 2.8)), wOut = ioC(seg(t, 12.2, 12.9));
+  set(win, wIn * (1 - wOut), `translateY(${lerp(60, 0, wIn) + wOut * 30}px) scale(${lerp(.94, 1, wIn) * lerp(1, .94, wOut)})`);
+
+  // ---- captions
+  const cap = $('caption'); let co = 0, html = '';
+  for (const [a, b, h] of CAPS) if (t >= a - .01 && t < b) { html = h; co = Math.min(seg(t, a, a + .35), 1 - seg(t, b - .3, b)); }
+  if (cap.innerHTML !== html) cap.innerHTML = html;
+  set(cap, co, `translateY(${(1 - co) * 8}px)`);
+
+  // ---- view switch inbox -> pipeline (8.6 – 9.2)
+  const sw = ioC(seg(t, 8.7, 9.25));
+  set($('vInbox'), 1 - sw, `translateX(${-sw * 40}px)`);
+  set($('vPipe'), sw, `translateX(${(1 - sw) * 40}px)`);
+  const n0 = $('n0').offsetTop, n1 = $('n1').offsetTop;
+  $('navsel').style.top = lerp(n0, n1, sw) + 'px';
+  $('n0').style.color = sw < .5 ? '#6d28d9' : '#94a3b8';
+  $('n1').style.color = sw >= .5 ? '#6d28d9' : '#94a3b8';
+
+  // ---- inbox items stream in (2.6 – 4.6)
+  let arrived = 0;
+  for (let i = 0; i < 5; i++) {
+    const a = 2.6 + i * 0.38, p = oB(seg(t, a, a + .45));
+    if (t >= a) arrived++;
+    set($('it' + i), seg(t, a, a + .25), `translateX(${lerp(-24, 0, p)}px) scale(${lerp(.96, 1, p)})`);
+    $('it' + i).querySelector('.unread').style.opacity = (i === 0 && t > 4.9) ? 0 : 1;
+  }
+  $('cnt').textContent = (t > 4.9 ? arrived - 1 : arrived) + ' new';
+  set($('empty'), seg(t, 2.3, 2.7) * (1 - seg(t, 4.85, 5.1)), '');
+  $('it0').classList.toggle('sel', t > 4.9);
+
+  // conversation panel
+  const cv = oC(seg(t, 4.9, 5.4));
+  set($('conv'), cv, `translateX(${(1 - cv) * 24}px)`);
+  set($('prop'), oC(seg(t, 5.0, 5.4)), `translateY(${(1 - oC(seg(t, 5.0, 5.4))) * 12}px)`);
+  set($('m1'), oC(seg(t, 5.2, 5.6)), `translateY(${(1 - oC(seg(t, 5.2, 5.6))) * 12}px)`);
+
+  // AI button press 5.9, typing 6.1 – 7.7
+  const press = seg(t, 5.85, 6.0) - seg(t, 6.0, 6.15);
+  const btnGone = seg(t, 6.1, 6.3);
+  set($('aibtn'), 1 - btnGone, `scale(${1 - press * .08})`);
+  $('aibtn').style.display = btnGone >= 1 ? 'none' : '';
+  set($('aibadge'), oC(seg(t, 6.05, 6.3)) * (1 - seg(t, 8.0, 8.15)), `translateY(${(1 - oC(seg(t, 6.05, 6.3))) * 6}px)`);
+  const n = Math.round(DRAFT.length * seg(t, 6.15, 7.7));
+  const sent = t >= 8.0;
+  const ct = $('ctext');
+  if (t < 6.15 || sent) { ct.className = 'txt'; ct.textContent = 'Type a message…'; }
+  else { ct.className = 'txt on'; ct.innerHTML = DRAFT.slice(0, n).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '<span class="caret" style="opacity:' + ((Math.floor(t * 3) % 2 || n < DRAFT.length) ? 1 : 0) + '"></span>'; }
+  const sp = seg(t, 7.8, 7.95) - seg(t, 7.95, 8.1);
+  $('send').style.transform = `scale(${1 - sp * .12})`;
+  $('m2t').textContent = DRAFT;
+  const mo = oC(seg(t, 8.0, 8.4));
+  set($('m2'), mo, `translateY(${(1 - mo) * 40}px) scale(${lerp(.96, 1, mo)})`);
+  // sentiment + score chips
+  set($('tPos'), oB(seg(t, 6.4, 6.8)) > 0 ? seg(t, 6.4, 6.6) : 0, `scale(${lerp(.7, 1, oB(seg(t, 6.4, 6.8)))})`);
+  set($('tHot'), seg(t, 6.7, 6.9), `scale(${lerp(.7, 1, oB(seg(t, 6.7, 7.1)))})`);
+  $('tHot').textContent = '🔥 Lead score ' + Math.round(lerp(40, 92, oC(seg(t, 6.7, 7.5))));
+
+  // ---- pipeline (9.2 – 12.2)
+  // automation moves Elif: New lead -> Viewing booked (9.6 – 10.3)
+  const k0 = $('k0'), mv = ioC(seg(t, 9.6, 10.3));
+  const lift = Math.sin(Math.PI * mv);
+  k0.style.left = lerp(36, 280, mv) + 'px';
+  k0.style.top = lerp(124, 320, mv) - lift * 16 + 'px';
+  k0.style.transform = `rotate(${lift * 3}deg) scale(${1 + lift * .04})`;
+  k0.classList.toggle('lift', lift > .05);
+  const au = $('auto');
+  au.style.left = lerp(36, 280, mv) + 'px'; au.style.top = (lerp(124, 320, mv) - lift * 16 - 30) + 'px';
+  au.style.opacity = seg(t, 9.35, 9.55) * (1 - seg(t, 10.6, 10.8));
+  const up1 = ioC(seg(t, 10.1, 10.5));
+  $('k1').style.top = lerp(222, 124, up1) + 'px'; $('k2').style.top = lerp(320, 222, up1) + 'px';
+  $('c0').textContent = mv > .5 ? 2 : 3; $('c1').textContent = mv > .5 ? 3 : 2;
+
+  // Mert drags Selin: Offer -> Closed won (10.5 – 11.5)
+  const cur = $('cur'), k5 = $('k5');
+  const appear = oC(seg(t, 10.2, 10.5));
+  const drag = ioC(seg(t, 10.7, 11.4));
+  const dl = Math.sin(Math.PI * drag);
+  const cx0 = 700, cy0 = 150;
+  let cx = lerp(900, cx0, appear), cy = lerp(420, cy0, appear);
+  if (t > 10.7) { cx = lerp(cx0, 944, drag); cy = lerp(cy0, 248, drag) - dl * 14; }
+  cur.style.left = cx + 'px'; cur.style.top = cy + 'px';
+  cur.style.opacity = seg(t, 10.2, 10.4) * (1 - seg(t, 11.9, 12.1));
+  k5.style.left = lerp(524, 768, drag) + 'px';
+  k5.style.top = lerp(124, 222, drag) - dl * 14 + 'px';
+  k5.style.transform = `rotate(${dl * -3}deg) scale(${1 + dl * .04})`;
+  k5.classList.toggle('lift', t > 10.6 && drag < 1);
+  const up2 = ioC(seg(t, 11.2, 11.6));
+  $('k6').style.top = lerp(222, 124, up2) + 'px';
+  $('c2').textContent = drag > .5 ? 1 : 2; $('c3').textContent = drag > .5 ? 2 : 1;
+  const won = oC(seg(t, 11.4, 11.9));
+  $('kWon').textContent = fmt(lerp(6.8, 13.6, won));
+  $('kOpen').textContent = fmt(lerp(31.4, 24.6, won));
+  const to = oB(seg(t, 11.4, 11.8));
+  set($('toast'), seg(t, 11.4, 11.6), `translateY(${(1 - to) * 24}px)`);
+
+  // ---- outro (12.7 – 14.5)
+  const o = t0 => oB(seg(t, t0, t0 + .55)), f = t0 => seg(t, t0, t0 + .3);
+  set($('omark'), f(12.8), `scale(${lerp(.6, 1, o(12.8))})`);
+  set($('oword'), f(12.95), `translateY(${(1 - oC(seg(t, 12.95, 13.5))) * 16}px)`);
+  set($('otag'), f(13.1), `translateY(${(1 - oC(seg(t, 13.1, 13.6))) * 14}px)`);
+  set($('ochips'), f(13.3), `translateY(${(1 - oC(seg(t, 13.3, 13.8))) * 14}px)`);
+  set($('oby'), f(13.5), '');
+}
+window.DUR = DUR; window.render = render;
+const q = new URLSearchParams(location.search);
+if (q.has('cover')) { document.body.style.background = 'transparent'; document.querySelector('.dots').remove(); $('caption').style.display = 'none'; }
+if (q.has('t')) render(parseFloat(q.get('t')));
+else if (!q.has('static')) { const s = performance.now(); const loop = () => { render(((performance.now() - s) / 1000) % DUR); requestAnimationFrame(loop); }; document.fonts.ready.then(loop); }
+</script>
+</body>
+</html>
